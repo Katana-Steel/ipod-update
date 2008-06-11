@@ -19,7 +19,7 @@ class IPodUpdate (object):
 				'/org/freedesktop/Hal/Manager')
 			hal_manager = dbus.Interface(hal_manager_obj,
 				'org.freedesktop.Hal.Manager')
-			dev_udi_list = hal_manager.FindDeviceStringMatch ('portable_audio_player.type', 'ipod')
+			dev_udi_list = hal_manager.FindDeviceStringMatch ('storage.model', 'iPod')
 			for udi in dev_udi_list:
 				vol_udi_list = hal_manager.FindDeviceStringMatch ('info.parent', udi)
 				label = '(unknown)'
@@ -47,6 +47,7 @@ class IPodUpdate (object):
 		data = ''
 		for offset in offsets:
 			data += commands.getoutput('sg_inq "%s" --page=%d --raw --vpd' % (dev, ord(offset)))[4:]
+		print data
 		parsed = plistlib.readPlistFromString(data)
 		family = parsed['UpdaterFamilyID']
 		firmware = parsed['VisibleBuildID']
