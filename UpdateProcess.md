@@ -1,0 +1,56 @@
+
+ipod-update - UpdateProcess.wiki
+# Obtaining iPod information
+
+The first part requires reading the information about the iPod. This is sometimes referred to as the "features" file but in general it's just a list of details about your device.
+
+To implement such a thing in a read-only way iPods sport a set of special SCSI information pages. To read them you must have the sg3_utils package installed (might be called something else depending on the distribution in use).
+
+While the most appropriate way to read such information is using the `sg_ll_inquiry` function call from `libsgutils`, you can also obtain the same information using the `sg_inq` binary from the same package. To read a page just use:
+
+`sg_inq /dev/sdb --page=192 --vpd --len=252 --raw`
+
+Where 192 is the page number in question and /dev/sdb is the iPod device node. The reply consists of a 4-byte header and up to 252 bytes of the actual reply body. Page 192 above has the special purpose of acting as a table of contents for the XML file. The body of page 192 is a list of page numbers that - if read sequentially and concatenated - will give you the whole XML file.
+
+The result looks like this:
+
+<?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"> <plist version="1.0"> <dict> <key>AppleDRMVersion</key> <dict> <key>Minimum</key> <integer>0</integer> <key>Maximum</key> <integer>4</integer> <key>Format</key> <integer>1</integer> </dict> <key>AudioCodecs</key> <dict> <key>AIFF</key> <dict> <key>Mono</key> <true/> <key>Stereo</key> <true/> <key>Multichannel</key> <false/> <key>MaximumSampleRate</key> <integer>48000</integer> <key>MaximumBitDepth</key> <integer>16</integer> </dict> <key>MP3</key> <dict> <key>Mono</key> <true/> <key>Stereo</key> <true/> <key>MaximumSampleRate</key> <integer>48000</integer> <key>MaximumDataRate</key> <integer>320</integer> </dict> <key>WAV</key> <dict> <key>Mono</key> <true/> <key>Stereo</key> <true/> <key>Multichannel</key> <false/> <key>MaximumSampleRate</key> <integer>48000</integer> <key>MaximumBitDepth</key> <integer>16</integer> </dict> <key>AAC</key> <dict> <key>AppleDRM</key> <true/> <key>MaximumSampleRate</key> <integer>48000</integer> <key>LC</key> <dict> <key>VariableBitRate</key> <true/> <key>PerceptualNoiseSubsitution</key> <true/> </dict> </dict> <key>AppleLossless</key> <dict> <key>Mono</key> <true/> <key>Stereo</key> <true/> <key>Multichannel</key> <false/> <key>MaximumBitDepth</key> <integer>32</integer> <key>MaximumBitDepthUntruncated</key> <integer>16</integer> <key>MaximumSampleRate</key> <integer>48000</integer><key>AppleDRM</key> <true/> </dict> <key>Audible</key> <dict> <key>Type1</key> <false/> <key>Type2</key> <true/> <key>Type3</key> <true/> <key>Type4</key> <true/> </dict> </dict> <key>BuildID</key> <string>8.1.3</string> <key>ConnectedBus</key> <string>USB</string> <key>MaxTransferSpeed</key> <integer>61440</integer> <key>FamilyID</key> <integer>9</integer> <key>FireWireGUID</key> <string>000A2xxxxxxxxxAB</string> <key>FireWireVersion</key> <string>1.62</string> <key>ImageSpecifications</key> <array> <key>1023</key> <dict> <key>FormatId</key> <integer>1023</integer> <key>RenderWidth</key> <integer>176</integer> <key>RenderHeight</key> <integer>132</integer> <key>PixelFormat</key> <string>42353635</string> <key>Interlaced</key> <false/> <key>ColorAdjustment</key> <integer>0</integer> <key>GammaAdjustment</key> <real>2.2</real> <key>Crop</key> <false/> <key>AlignRowBytes</key> <true/> <key>Rotation</key> <integer>0</integer> </dict> <key>1032</key> <dict> <key>FormatId</key> <integer>1032</integer> <key>RenderWidth</key> <integer>41</integer> <key>RenderHeight</key> <integer>37</integer> <key>PixelFormat</key> <string>4C353635</string> <key>Interlaced</key> <false/> <key>ColorAdjustment</key> <integer>0</integer> <key>GammaAdjustment</key> <real>2.2</real> <key>Crop</key> <true/> <key>AlignRowBytes</key> <true/> <key>BackColor</key> <string>00000000</string> </dict> </array> <key>AlbumArt</key> <array> <key>1031</key> <dict> <key>FormatId</key> <integer>1031</integer> <key>RenderWidth</key> <integer>42</integer> <key>RenderHeight</key> <integer>42</integer> <key>PixelFormat</key> <string>4C353635</string> <key>Interlaced</key> <false/> <key>ColorAdjustment</key> <integer>0</integer> <key>GammaAdjustment</key> <real>2.2</real> <key>Crop</key> <false/> <key>AlignRowBytes</key> <true/> <key>BackColor</key> <string>FFFFFFFF</string> </dict> <key>1027</key> <dict> <key>FormatId</key> <integer>1027</integer> <key>RenderWidth</key> <integer>100</integer> <key>RenderHeight</key> <integer>100</integer> <key>PixelFormat</key> <string>4C353635</string> <key>Interlaced</key> <false/> <key>ColorAdjustment</key> <integer>0</integer> <key>GammaAdjustment</key> <real>2.2</real> <key>Crop</key> <false/> <key>AlignRowBytes</key> <true/> <key>BackColor</key> <string>FFFFFFFF</string> </dict> </array> <key>PodcastsSupported</key> <true/> <key>ChapterImageSpecs</key> <array> <key>1031</key> <dict> <key>FormatId</key> <integer>1031</integer> <key>RenderWidth</key> <integer>42</integer> <key>RenderHeight</key> <integer>42</integer> <key>PixelFormat</key> <string>4C353635</string> <key>Interlaced</key> <false/> <key>ColorAdjustment</key> <integer>0</integer> <key>GammaAdjustment</key> <real>2.2</real> <key>Crop</key> <false/> <key>AlignRowBytes</key> <true/> <key>BackColor</key> <string>FFFFFFFF</string> </dict> <key>1027</key> <dict> <key>FormatId</key> <integer>1027</integer> <key>RenderWidth</key> <integer>100</integer> <key>RenderHeight</key> <integer>100</integer> <key>PixelFormat</key> <string>4C353635</string> <key>Interlaced</key> <false/> <key>ColorAdjustment</key> <integer>0</integer> <key>GammaAdjustment</key> <real>2.2</real> <key>Crop</key> <false/> <key>AlignRowBytes</key> <true/> <key>BackColor</key> <string>FFFFFFFF</string> </dict> </array> <key>MinITunesVersion</key> <string>7.0</string> <key>SerialNumber</key> <string>6UxxxxxxVQ5</string> <key>UpdaterFamilyID</key> <integer>19</integer> <key>VisibleBuildID</key> <string>1.1.3</string> <key>64Bit</key> <integer>3</integer> <key>OEMID</key> <integer>0</integer> <key>OEMU</key> <integer>10</integer> <key>Language</key> <string>pl-PL</string> <key>PowerInformation</key> <dict> <key>WillFlash</key> <true/> <key>USB</key> <true/> <key>FireWire</key> <false/> </dict> <key>VoiceMemosSupported</key> <true/> <key>VoiceMemoFormats</key> <dict> <key>WAV</key> <dict> <key>MaximumSampleRate</key> <integer>44100</integer> </dict> </dict> <key>AutoRebootAfterFirmwareUpdate</key> <true/> <key>VolumeFormat</key> <string>FAT32</string> <key>VolumeInformation</key> <dict> <key>HFSPLUS</key> <dict> <key>SupportedFormat</key> <true/> <key>ConversionSupported</key> <true/> <key>CurrentFormat</key> <false/> </dict> <key>FAT32</key> <dict> <key>SupportedFormat</key> <true/> <key>ConversionSupported</key> <false/> <key>CurrentFormat</key> <true/> </dict> </dict> <key>ForcedDiskMode</key> <false/> <key>BangFolder</key> <false/> <key>CorruptDataPartition</key> <false/> <key>CorruptFirmwarePartition</key> <false/> <key>CanFlashBacklight</key> <true/> <key>CanHibernate</key> <true/> <key>CameWithCD</key> <false/> <key>RAM</key> <integer>32</integer> <key>HotPlugState</key> <integer>0</integer> <key>SortFieldsSupported</key> <true/> <key>LocalizedVoicePrompts</key> <true/> </dict> </plist>
+
+The format itself is a pretty non-XMLy XML application called plist and I'm sure you can find a working parser for you language as the format is pretty common in Apple's applications.
+
+The most important keys here are **UpdaterFamilyID** and **VisibleBuildID**. The former contains an iTunes' internal ID of your model and the latter is the installed firmware version.
+# Obtaining iTunes information
+
+The second step is to do what iTunes does as soon as it sees a new device. That means a HTTP GET request to [the version database](http://itunes.com/version). A request to that address results in a redirect to the most up-to-date version which in turn is a gzipped plist XML file.
+
+The file format is the same but the structure is very different. This file includes all the downloadable updates and restore files for iTunes, iPods and iPhones. The important part however is the one below:
+
+<?xml version="1.0" encoding="UTF-8" standalone="no"?> <plist version="1.0"> <dict> [...] <key>iPodSoftwareVersions</key> <dict> <key>24</key> <dict> <key>UpdaterFamilyID</key> <integer>24</integer> <key>BuildID</key> <integer>152076288</integer> <key>FirmwareURL</key> <string>http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPod/SBML/osx/bundles/061-4010.20080115.Ad4rF/iPod_24.1.1.ipsw</string> <key>DocumentationURL</key> <string>http://appldnld.apple.com.edgesuite.net/content.info.apple.com/iPod/SBML/osx/bundles/061-4010.20080115.Ad4rF/iPodDocumentation_24.1.1.ipd</string> <key>VisibleBuildID</key> <integer>17858560</integer> </dict> [...] </dict> [...] </dict> </plist>
+
+The iPodSoftwareVersions key is an array of iPod firmware information indexed by the UpdaterFamilyID found in the first step. The above snippet is meant to be used with iPods returning UpdaterFamilyID of 24.
+
+The interesting part is the FirmwareURL key of course pointing to the file we need to download. I have not yet determined how iTunes is able to tell if the version installed on your iPod is the latest one as both BuildID and VisibleBuildID in the version database are integers and are nowhere to be found in the file obtained from the iPod in the first step.
+#Uploading firmware
+
+Downloading firmware is as easy as pointing wget to the FirmwareURL address obtained in the second step. The resulting ipsw file is a zip archive containing two files:
+
+    Firmware*
+    manifest.plist
+
+The first one is the real firmware image and changes its name from version to version. The second is yet another plist XML file including information needed to check the firmware offline (once it was downloaded) but we will skip this step for now (since we just downloaded the file and we trust Apple not to play tricks on us).
+
+Once the Firmware* file is extracted you can start by making a backup copy of the currently running firmware. The dd command does the job:
+
+`dd if=/dev/sdb1 of=backup`
+
+Where /dev/sdb1 is the firmware partition (it's the one before the actual data partition and is usually between 20MB and 100MB in size). Please keep in mind that both the letter and the partition number may vary - in particular HFS+ (Mac-style) iPods show 3 partitions instead of 2 and the first one is the Mac partition table.
+
+Once that is done, upload the firmware file extracted earlier:
+
+`dd if=Firmware-19.8.1.3 of=/dev/sdb1`
+
+Obviously replace the firmware file and the disk node as needed.
+
+Once complete, either unmount or unplug your iPod. As soon as you do it will ask you to replug to a power source so it can complete the upgrade process. From what it seems the iPod's firmware partition is separate from the running firmware and is only used as a means of transportation so once you replug the actual internal upload process will start resulting in a progress bar on the iPod's display. Then the device will reset to start the newly installed software. Voila, firmware updated.
+
+

@@ -71,7 +71,7 @@ class IPodUpdate (object):
 		return (family, firmware)
 
 	def __init__(self):
-		data = StringIO.StringIO(urlgrabber.urlread('http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/com.apple.jingle.appserver.client.MZITunesClientCheck/version/'))
+		data = StringIO.StringIO(urlgrabber.urlread('http://itunes.com/version'))
 #		stream = gzip.GzipFile(fileobj = data)
 #		data = stream.read()
 		updates = plistlib.readPlist(data)
