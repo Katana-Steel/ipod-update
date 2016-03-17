@@ -5,9 +5,10 @@ A proof of concept tool that actually allows you to upgrade your iPod firmware w
 Requirements:
 
 * urlgrabber
-* python-dbus
+* pyudev
+* *python-dbus*
 * sg3_utils
-* running HAL
+* *running HAL*
 * access to the raw device (most probably root account)
 
 Please note that this is not the authorised way to update your firmware and you are the one responsible for the results in case your iPod stops working. Either take the responsibility or use iTunes.
