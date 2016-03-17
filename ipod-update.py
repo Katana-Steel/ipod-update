@@ -3,6 +3,7 @@ import plistlib
 import StringIO
 import commands
 import dbus
+import pyudev
 import gzip
 import shutil
 import urlgrabber
@@ -11,6 +12,21 @@ import xml.sax
 import zipfile
 
 class IPodUpdate (object):
+	def findPodsUdev(self):
+		results = []
+		cx = pyudev.Context()
+		for device in cx.list_devices(subsystem='block',DEVTYPE='disk'):
+			if device.get('ID_MODEL') == u'iPod':
+				dev = device.device_node
+				label = '(unknown)'
+				for parts in device.children:
+					if parts.get('ID_FS_TYPE') == 0:
+						dev = parts.device_node
+					if not parts.get('ID_FS_LABEL') is None:
+						label = parts.get('ID_FS_LABEL') 
+				results.append((dev,label,None,None))
+		return results
+
 	def findPods(self):
 		results = []
 		bus = dbus.SystemBus()
@@ -37,7 +53,8 @@ class IPodUpdate (object):
 					results.append((device, label, None, None))
 				break
 		except:
-			print 'HAL is down?'
+			print 'HAL is down? trying udev'
+			results = self.findPodsUdev()
 
 		return results
 
@@ -54,10 +71,10 @@ class IPodUpdate (object):
 		return (family, firmware)
 
 	def __init__(self):
-		data = StringIO.StringIO(urlgrabber.urlread('http://itunes.com/version'))
-		stream = gzip.GzipFile(fileobj = data)
-		data = stream.read()
-		updates = plistlib.readPlistFromString(data)
+		data = StringIO.StringIO(urlgrabber.urlread('http://ax.phobos.apple.com.edgesuite.net/WebObjects/MZStore.woa/wa/com.apple.jingle.appserver.client.MZITunesClientCheck/version/'))
+#		stream = gzip.GzipFile(fileobj = data)
+#		data = stream.read()
+		updates = plistlib.readPlist(data)
 		devs = self.findPods()
 		for (dev, name, family, firmware) in devs:
 			if not family:
@@ -67,7 +84,7 @@ class IPodUpdate (object):
 				uri = updates['iPodSoftwareVersions'][unicode(family)]['FirmwareURL']
 				print 'Latest firmware: %s' % uri
 				print 'Fetching firmware...'
-				path = urlgrabber.urlgrab(uri, progress_obj = urlgrabber.progress.text_progress_meter(), reget = 'check_timestamp')
+				path = urlgrabber.urlgrab(uri, progress_obj = urlgrabber.progress.text_progress_meter(), reget = 'simple')
 				print 'Extracting firmware...'
 				zf = zipfile.ZipFile(path)
 				for name in zf.namelist():

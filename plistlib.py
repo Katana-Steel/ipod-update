@@ -423,6 +423,8 @@ class PlistParser:
         elif not self.stack:
             # this is the root object
             self.root = value
+        elif type(self.stack[-1]) == type({}):
+            self.stack[-1]['none'] = value
         else:
             self.stack[-1].append(value)
 
