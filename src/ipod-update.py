@@ -2,9 +2,7 @@
 import plistlib
 import StringIO
 import commands
-import dbus
 import pyudev
-import gzip
 import shutil
 import urlgrabber
 import urlgrabber.progress
@@ -20,7 +18,7 @@ class IPodUpdate (object):
 				dev = device.device_node
 				label = '(unknown)'
 				for parts in device.children:
-					if parts.get('ID_FS_TYPE') == 0:
+					if parts.get('ID_PART_ENTRY_TYPE') == '0x0':
 						dev = parts.device_node
 					if not parts.get('ID_FS_LABEL') is None:
 						label = parts.get('ID_FS_LABEL') 
@@ -64,21 +62,18 @@ class IPodUpdate (object):
 		data = ''
 		for offset in offsets:
 			data += commands.getoutput('sg_inq "%s" --page=%d --raw --vpd' % (dev, ord(offset)))[4:]
-		print data
 		parsed = plistlib.readPlistFromString(data)
 		family = parsed['UpdaterFamilyID']
 		firmware = parsed['VisibleBuildID']
 		return (family, firmware)
 
 	def __init__(self):
+		devs = self.findPodsUdev()
 		data = StringIO.StringIO(urlgrabber.urlread('http://itunes.com/version'))
-#		stream = gzip.GzipFile(fileobj = data)
-#		data = stream.read()
 		updates = plistlib.readPlist(data)
-		devs = self.findPods()
 		for (dev, name, family, firmware) in devs:
 			if not family:
-				family, firmware = self.getIPodData(dev)
+				family, firmware = self.getIPodData(dev[:-1])
 			print 'Found %s with family %s and firmware %s' % (name, family, firmware)
 			if updates['iPodSoftwareVersions'].has_key(unicode(family)):
 				uri = updates['iPodSoftwareVersions'][unicode(family)]['FirmwareURL']
@@ -96,9 +91,9 @@ class IPodUpdate (object):
 						infile = open('Firmware', 'rb')
 						outfile = open(dev, 'wb')
 						# FIXME: do the following in pure python?
-						print 'Making backup...'
+						print 'Making backup... of %s' % dev
 						commands.getoutput('dd if=%s of=Backup' % dev)
-						print 'Uploading firmware...'
+						print 'Uploading firmware... to %s' % dev
 						commands.getoutput('dd if=Firmware of=%s' % dev)
 			print 'Done.'
 
